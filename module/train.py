@@ -20,7 +20,7 @@ train_path = '../dataset/augment_data'
 train_file = '../dataset/train.txt'
 val_file = '../dataset/val.txt'
 vocab_file = '../dataset/augment_labels.txt'
-batch_size = 1024
+batch_size = 256
 seq_length = 144
 image_size = (384, 384)
 train_dataset = CustomDataset(train_path, train_file, vocab_file, seq_length, image_size)
@@ -29,19 +29,19 @@ train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
 val_loader = DataLoader(val_dataset, batch_size=batch_size, shuffle=True)
 vocab = train_dataset.vocab.string_to_index
 # Create instance model
-n_dim_model = 32
+n_dim_model = 256
 # --- Encoder Parameters ---
 input_chanel_encoder = 3
-hidden_dim_encoder = 48
-n_head_encoder = 3
+hidden_dim_encoder = 256
+n_head_encoder = 8
 n_expansion_encoder = 4
-n_layer_encoder = 2
+n_layer_encoder = 6
 # --- Decoder Parameters ---
-n_head_decoder = 2
+n_head_decoder = 8
 seq_length_decoder = seq_length
 vocab_size_decoder = len(vocab)
 n_expansion_decoder = 4
-n_layer_decoder = 2
+n_layer_decoder = 6
 model = Model(n_dim_model, input_chanel_encoder, hidden_dim_encoder, n_head_encoder, n_expansion_encoder, n_layer_encoder,
               n_head_decoder, seq_length_decoder, vocab_size_decoder, n_expansion_decoder, n_layer_decoder).to(device)
 pytorch_total_params = sum(p.numel() for p in model.parameters() if p.requires_grad)
@@ -51,8 +51,8 @@ print("Vocabularies: {}".format(vocab))
 print("-----------------------------------------------------------------------")
 # Loss function and Optimizer
 epochs = 70
-# criterion = torch.nn.CrossEntropyLoss(ignore_index=vocab['<pad>'])
-criterion = FocalLoss(alpha=0.75, gamma=2.0, ignore_index=0)
+criterion = torch.nn.CrossEntropyLoss(ignore_index=vocab['<pad>'])
+# criterion = FocalLoss(alpha=0.75, gamma=2.0, ignore_index=0)
 optimizer = torch.optim.AdamW(model.parameters(), betas=(0.9, 0.98), eps=1e-09, weight_decay=1e-5)
 lr_scheduler = CustomSchedule(optimizer, d_model=n_dim_model, warmup_steps=4000)
 early_stopping = EarlyStopping(patience=5, delta=1e-3, verbose=True)
