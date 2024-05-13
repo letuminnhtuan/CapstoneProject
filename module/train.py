@@ -51,8 +51,8 @@ print("Vocabularies: {}".format(vocab))
 print("-----------------------------------------------------------------------")
 # Loss function and Optimizer
 epochs = 150
-# criterion = torch.nn.CrossEntropyLoss(ignore_index=vocab['<pad>'])
-criterion = FocalLoss(alpha=0.75, gamma=2.0, ignore_index=vocab['<pad>'])
+criterion = torch.nn.CrossEntropyLoss(ignore_index=vocab['<pad>'])
+# criterion = FocalLoss(alpha=0.75, gamma=2.0, ignore_index=vocab['<pad>'])
 optimizer = torch.optim.AdamW(model.parameters(), betas=(0.9, 0.98), eps=1e-09, weight_decay=1e-5)
 lr_scheduler = CustomSchedule(optimizer, d_model=n_dim_model, warmup_steps=4000)
 early_stopping = EarlyStopping(patience=5, delta=1e-3, verbose=True)

@@ -36,7 +36,7 @@ class ViT(torch.nn.Module):
         # Instance
         self.patch_embedding = torch.nn.Sequential(
             CNNBlock(in_channels=self.input_chanel, out_channels=self.output_chanel, kernel_size=32, stride=32, padding=0, pool=False),
-            torch.nn.Dropout(0.2)
+            torch.nn.Dropout(0.5)
         )
         self.flatten = torch.nn.Flatten(2)
         self.dropout = torch.nn.Dropout(0.2)
