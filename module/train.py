@@ -20,7 +20,7 @@ train_path = '../dataset/augment_data'
 train_file = '../dataset/train.txt'
 val_file = '../dataset/val.txt'
 vocab_file = '../dataset/augment_labels.txt'
-batch_size = 256
+batch_size = 128
 seq_length = 144
 image_size = (384, 384)
 train_dataset = CustomDataset(train_path, train_file, vocab_file, seq_length, image_size)
@@ -29,10 +29,10 @@ train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
 val_loader = DataLoader(val_dataset, batch_size=batch_size, shuffle=True)
 vocab = train_dataset.vocab.string_to_index
 # Create instance model
-n_dim_model = 256
+n_dim_model = 512
 # --- Encoder Parameters ---
 input_chanel_encoder = 3
-hidden_dim_encoder = 256
+hidden_dim_encoder = 512
 n_head_encoder = 8
 n_expansion_encoder = 4
 n_layer_encoder = 6
@@ -50,9 +50,9 @@ print("Num of Vocabularies: {}".format(len(vocab)))
 print("Vocabularies: {}".format(vocab))
 print("-----------------------------------------------------------------------")
 # Loss function and Optimizer
-epochs = 70
-criterion = torch.nn.CrossEntropyLoss(ignore_index=vocab['<pad>'])
-# criterion = FocalLoss(alpha=0.75, gamma=2.0, ignore_index=0)
+epochs = 150
+# criterion = torch.nn.CrossEntropyLoss(ignore_index=vocab['<pad>'])
+criterion = FocalLoss(alpha=0.75, gamma=2.0, ignore_index=vocab['<pad>'])
 optimizer = torch.optim.AdamW(model.parameters(), betas=(0.9, 0.98), eps=1e-09, weight_decay=1e-5)
 lr_scheduler = CustomSchedule(optimizer, d_model=n_dim_model, warmup_steps=4000)
 early_stopping = EarlyStopping(patience=5, delta=1e-3, verbose=True)
@@ -150,7 +150,7 @@ for epoch in range(epochs):
     torch.save({
         'model_state_dict': model.state_dict(),
         'vocab': vocab
-    }, '../checkpoints2/checkpoint.pth.tar')
+    }, '../checkpoints2/checkpoint_v3.pth.tar')
     if early_stopping(loss_val):
         print("Early Stopping Training Progress!")
         break
