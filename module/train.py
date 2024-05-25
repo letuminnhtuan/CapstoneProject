@@ -16,52 +16,54 @@ wandb.login(key='e7ca95062f4bf972322db5f37645ac5fa1e0afb0', relogin=True)
 wandb.init(project='ocr_vn', reinit=True)
 
 # ------- Get train_loader, val_loader -------
-train_path = '../dataset/augment_data'
-train_file = '../dataset/train.txt'
-val_file = '../dataset/val.txt'
-vocab_file = '../dataset/augment_labels.txt'
-batch_size = 128
-seq_length = 144
+train_path = 'D:/DATN_Handle/augment_data'
+train_file = 'D:/DATN_Handle/augment_labels.txt'
+val_path = '../dataset/augment_data'
+val_file = '../dataset/augment_labels.txt'
+vocab_file = 'D:/DATN_Handle/augment_labels.txt'
+batch_size = 256
+seq_length = 224
 image_size = (384, 384)
 train_dataset = CustomDataset(train_path, train_file, vocab_file, seq_length, image_size)
-val_dataset = CustomDataset(train_path, val_file, vocab_file, seq_length, image_size)
+val_dataset = CustomDataset(val_path, val_file, vocab_file, seq_length, image_size)
 train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
 val_loader = DataLoader(val_dataset, batch_size=batch_size, shuffle=True)
 vocab = train_dataset.vocab.string_to_index
 # Create instance model
-n_dim_model = 512
+n_dim_model = 256
 # --- Encoder Parameters ---
 input_chanel_encoder = 3
-hidden_dim_encoder = 512
+hidden_dim_encoder = 256
 n_head_encoder = 8
-n_expansion_encoder = 4
+n_expansion_encoder = 8
 n_layer_encoder = 6
 # --- Decoder Parameters ---
 n_head_decoder = 8
 seq_length_decoder = seq_length
 vocab_size_decoder = len(vocab)
-n_expansion_decoder = 4
+n_expansion_decoder = 8
 n_layer_decoder = 6
 model = Model(n_dim_model, input_chanel_encoder, hidden_dim_encoder, n_head_encoder, n_expansion_encoder, n_layer_encoder,
               n_head_decoder, seq_length_decoder, vocab_size_decoder, n_expansion_decoder, n_layer_decoder).to(device)
 pytorch_total_params = sum(p.numel() for p in model.parameters() if p.requires_grad)
 print("Total number of parameters: {}".format(pytorch_total_params))
 print("Num of Vocabularies: {}".format(len(vocab)))
-print("Vocabularies: {}".format(vocab))
+print("Num of train batch: {}".format(len(train_loader)))
+print("Num of val batch: {}".format(len(val_loader)))
 print("-----------------------------------------------------------------------")
 # Loss function and Optimizer
-epochs = 150
+epochs = 10
 criterion = torch.nn.CrossEntropyLoss(ignore_index=vocab['<pad>'])
 # criterion = FocalLoss(alpha=0.75, gamma=2.0, ignore_index=vocab['<pad>'])
-optimizer = torch.optim.AdamW(model.parameters(), betas=(0.9, 0.98), eps=1e-09, weight_decay=1e-5)
-lr_scheduler = CustomSchedule(optimizer, d_model=n_dim_model, warmup_steps=4000)
+optimizer = torch.optim.AdamW(model.parameters(), betas=(0.9, 0.98), eps=1e-09, weight_decay=5e-4)
+lr_scheduler = CustomSchedule(optimizer, d_model=n_dim_model, warmup_steps=10000)
 early_stopping = EarlyStopping(patience=5, delta=1e-3, verbose=True)
 # Training
 for epoch in range(epochs):
     model.train()
     loss_value = 0.0
     cer_value = 0.0
-    recall_value, precision_value, f1_value, acc_value = 0.0, 0.0, 0.0, 0.0
+    # recall_value, precision_value, f1_value, acc_value = 0.0, 0.0, 0.0, 0.0
     for batch_idx, (input_encoder, input_decoder) in enumerate(train_loader):
         # Predict
         lr_scheduler.step()
@@ -74,7 +76,7 @@ for epoch in range(epochs):
         loss = criterion(output, target)
         loss_value += loss.item()
         # Compute metrics
-        # current_lr = optimizer.param_groups[0]['lr']
+        current_lr = optimizer.param_groups[0]['lr']
         # cer, recall, precision, f1, acc = compute_metrics(input_decoder, output_model, vocab)
         # cer_value += cer
         # recall_value += recall
@@ -88,7 +90,7 @@ for epoch in range(epochs):
         optimizer.zero_grad()
         wandb.log({
             'loss per step': loss.item(),
-            # 'lr': current_lr,
+            'lr': current_lr,
             # 'cer per step': cer,
             # 'recall per step': recall,
             # 'precision per step': precision,
@@ -125,13 +127,13 @@ for epoch in range(epochs):
             output = output_model.contiguous().view(-1, output_dim)
             target = input_decoder[:, 1:].contiguous().view(-1).long()
             loss = criterion(output, target).item()
-            cer, recall, precision, f1, acc = compute_metrics(input_decoder, output_model, vocab)
-            cer_value += cer
+            # cer, recall, precision, f1, acc = compute_metrics(input_decoder, output_model, vocab)
+            # cer_value += cer
             loss_value += loss
-            recall_value += recall
-            precision_value += precision
-            f1_value += f1
-            acc_value += acc
+            # recall_value += recall
+            # precision_value += precision
+            # f1_value += f1
+            # acc_value += acc
         loss_val = loss_value / len(val_loader)
         # cer_val = cer_value / len(val_loader)
         # recall_value = recall_value / len(val_loader)
@@ -150,9 +152,8 @@ for epoch in range(epochs):
     torch.save({
         'model_state_dict': model.state_dict(),
         'vocab': vocab
-    }, '../checkpoints2/checkpoint_v3.pth.tar')
+    }, '../checkpoints2/pre3.pth.tar')
     if early_stopping(loss_val):
         print("Early Stopping Training Progress!")
         break
-torch.save(model.state_dict(), '../model.pth')
 wandb.finish()

@@ -36,10 +36,10 @@ class ViT(torch.nn.Module):
         # Instance
         self.patch_embedding = torch.nn.Sequential(
             CNNBlock(in_channels=self.input_chanel, out_channels=self.output_chanel, kernel_size=32, stride=32, padding=0, pool=False),
-            torch.nn.Dropout(0.5)
+            torch.nn.Dropout(0.1)
         )
         self.flatten = torch.nn.Flatten(2)
-        self.dropout = torch.nn.Dropout(0.2)
+        self.dropout = torch.nn.Dropout(0.1)
         self.transformer_blocks = torch.nn.ModuleList(
             [TransformerBlock(self.n_head, self.output_chanel, self.n_expansion).to(self.device) for _ in range(self.n_layer)]
         )

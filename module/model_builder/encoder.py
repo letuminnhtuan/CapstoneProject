@@ -17,7 +17,7 @@ class EncoderBlock(torch.nn.Module):
         self.fc_out = torch.nn.Sequential(
             torch.nn.Linear(self.hidden_dim, self.output_chanel),
             torch.nn.ReLU(),
-            torch.nn.Dropout(0.2)
+            torch.nn.Dropout(0.1)
         )
 
     def forward(self, x):

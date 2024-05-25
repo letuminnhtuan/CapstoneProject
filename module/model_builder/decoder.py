@@ -42,7 +42,7 @@ class DecoderBlock(torch.nn.Module):
             [DecoderLayer(self.n_head, self.n_dim, self.seq_length, self.vocab_size, self.n_expansion).to(self.device) for _ in range(self.n_layer)]
         )
         self.fc_output = torch.nn.Linear(self.n_dim, self.vocab_size)
-        self.dropout = torch.nn.Dropout(0.2)
+        self.dropout = torch.nn.Dropout(0.1)
 
     def forward(self, output_encoder, input_decoder, mask):
         embedding_vector = self.embedding(input_decoder)
