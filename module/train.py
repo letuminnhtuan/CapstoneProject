@@ -13,7 +13,7 @@ from torch.utils.data import DataLoader
 warnings.filterwarnings("ignore")
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 wandb.login(key='e7ca95062f4bf972322db5f37645ac5fa1e0afb0', relogin=True)
-wandb.init(project='ocr_vn', reinit=True)
+wandb.init(project='VN_OCR', reinit=True)
 
 # ------- Get train_loader, val_loader -------
 train_path = 'D:/DATN_Handle/augment_data'
@@ -32,7 +32,7 @@ vocab = train_dataset.vocab.string_to_index
 # Create instance model
 n_dim_model = 256
 # --- Encoder Parameters ---
-input_chanel_encoder = 3
+input_chanel_encoder = 1
 hidden_dim_encoder = 256
 n_head_encoder = 8
 n_expansion_encoder = 8
@@ -76,7 +76,7 @@ for epoch in range(epochs):
         loss = criterion(output, target)
         loss_value += loss.item()
         # Compute metrics
-        current_lr = optimizer.param_groups[0]['lr']
+        # current_lr = optimizer.param_groups[0]['lr']
         # cer, recall, precision, f1, acc = compute_metrics(input_decoder, output_model, vocab)
         # cer_value += cer
         # recall_value += recall
@@ -84,13 +84,13 @@ for epoch in range(epochs):
         # f1_value += f1
         # acc_value += acc
         loss.backward()
-        total_norm = compute_total_norm(model)
+        # total_norm = compute_total_norm(model)
         torch.nn.utils.clip_grad_norm_(model.parameters(), 1)
         optimizer.step()
         optimizer.zero_grad()
         wandb.log({
             'loss per step': loss.item(),
-            'lr': current_lr,
+            # 'lr': current_lr,
             # 'cer per step': cer,
             # 'recall per step': recall,
             # 'precision per step': precision,
@@ -127,9 +127,9 @@ for epoch in range(epochs):
             output = output_model.contiguous().view(-1, output_dim)
             target = input_decoder[:, 1:].contiguous().view(-1).long()
             loss = criterion(output, target).item()
+            loss_value += loss
             # cer, recall, precision, f1, acc = compute_metrics(input_decoder, output_model, vocab)
             # cer_value += cer
-            loss_value += loss
             # recall_value += recall
             # precision_value += precision
             # f1_value += f1
@@ -152,7 +152,7 @@ for epoch in range(epochs):
     torch.save({
         'model_state_dict': model.state_dict(),
         'vocab': vocab
-    }, '../checkpoints2/pre3.pth.tar')
+    }, '../checkpoints2/pre4.pth.tar')
     if early_stopping(loss_val):
         print("Early Stopping Training Progress!")
         break

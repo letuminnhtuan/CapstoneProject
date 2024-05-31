@@ -76,7 +76,7 @@ class CustomDataset(Dataset):
         # Get image
         path = self.input[index]
         image_path = os.path.join(self.folder_name, path)
-        image = Image.open(image_path).convert("RGB")
+        image = Image.open(image_path).convert("L")
         image_tensor = self.transform(image)
         # Get label
         label = self.output[index]
