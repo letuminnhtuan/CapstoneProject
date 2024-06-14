@@ -21,7 +21,7 @@ train_file = 'D:/DATN_Handle/augment_labels.txt'
 val_path = '../dataset/augment_data'
 val_file = '../dataset/augment_labels.txt'
 vocab_file = 'D:/DATN_Handle/augment_labels.txt'
-batch_size = 256
+batch_size = 352
 seq_length = 224
 image_size = (384, 384)
 train_dataset = CustomDataset(train_path, train_file, vocab_file, seq_length, image_size)
@@ -33,7 +33,7 @@ vocab = train_dataset.vocab.string_to_index
 n_dim_model = 256
 # --- Encoder Parameters ---
 input_chanel_encoder = 1
-hidden_dim_encoder = 256
+hidden_dim_encoder = 384
 n_head_encoder = 8
 n_expansion_encoder = 8
 n_layer_encoder = 6
@@ -152,7 +152,7 @@ for epoch in range(epochs):
     torch.save({
         'model_state_dict': model.state_dict(),
         'vocab': vocab
-    }, '../checkpoints2/pre4.pth.tar')
+    }, '../checkpoints2/pre6.pth.tar')
     if early_stopping(loss_val):
         print("Early Stopping Training Progress!")
         break
